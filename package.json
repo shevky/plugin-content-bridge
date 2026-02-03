@@ -34,6 +34,13 @@
     "url": "https://github.com/shevky/plugin-content-bridge/issues"
   },
   "homepage": "https://github.com/shevky/plugin-content-bridge#readme",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "main.js",
+    "index.d.ts",
+    "lib/"
+  ],
   "publishConfig": {
     "access": "public"
   },
