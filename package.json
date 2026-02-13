@@ -1,6 +1,6 @@
 {
   "name": "@shevky/plugin-content-bridge",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Shevky plugin that fetches external content and injects it into the build pipeline.",
   "type": "module",
   "main": "main.js",

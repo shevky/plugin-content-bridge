@@ -172,6 +172,7 @@ customTags: "$arr('remote', $_location.city, $if($_isExperienceRequired, 'experi
 - `output.directory`: Target folder for generated markdown files (relative paths are resolved from project root)
 - `output.fileNameFormat`: Output file format (default: `{slug}.md`)
 - `source.output`: Optional per-source override. Set `false` to disable export for that source.
+- Front matter arrays/objects are exported as YAML blocks (not JSON inline strings).
 
 `fileNameFormat` supports:
 
@@ -180,6 +181,8 @@ customTags: "$arr('remote', $_location.city, $if($_isExperienceRequired, 'experi
 - Mapping expression format: `"$concat($_lang, '/', $_slug, '.md')"`
 
 If no extension is provided, `.md` is appended automatically.
+Unscoped fields (e.g. `$_title`, `{title}`) resolve with `frontMatter` priority, then `source`.
+Use `$_source.*` for raw API values and `$_frontMatter.*` for explicit mapped header values.
 
 Field references:
 
@@ -257,7 +260,7 @@ Notes:
 
 `$date` format tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
 
-### Required Front Matter Fields
+### Minimum Required Front Matter Fields
 
 - `id`
 - `lang`
