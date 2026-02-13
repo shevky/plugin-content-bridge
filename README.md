@@ -8,6 +8,7 @@ Pulls content from external APIs and injects it into the Shevky build pipeline. 
 - Flexible field mapping and transformations
 - Pagination support (page, offset, cursor)
 - Request settings (method, headers, body, timeout)
+- Optional markdown export to disk
 
 ## Installation
 
@@ -34,6 +35,10 @@ Add plugin config in `site.json` (recommended: `sources`):
   "pluginConfigs": {
     "shevky-content-bridge": {
       "maxItems": 10,
+      "output": {
+        "directory": "./tmp/content-bridge",
+        "fileNameFormat": "{lang}/{slug}.md"
+      },
       "sources": [
         {
           "name": "posts",
@@ -70,6 +75,10 @@ Add plugin config in `site.json` (recommended: `sources`):
             "content": "$_body",
             "sourcePath": "$concat('bridge://dummyjson/posts/', $_id, '.md')"
           },
+          "output": {
+            "directory": "./tmp/content-bridge/posts",
+            "fileNameFormat": "{frontMatter.slug}-{id}.md"
+          },
           "maxItems": 5
         }
       ]
@@ -86,6 +95,7 @@ Use `sources` to fetch from multiple APIs. Each source has its own `fetch` and `
 
 - `sources`: Array of `{ name?, fetch, mapping, maxItems? }`
 - `maxItems`: Optional global limit (applies to all sources)
+- `output`: Optional global markdown export config (`source.output` can override)
 
 ### Fetch
 
@@ -139,6 +149,20 @@ Continuation priority:
 
 - `maxItems`: Optional. Global limit for the plugin. Each source can override it with its own `maxItems`.
 
+### Output (Markdown Export)
+
+- `output.directory`: Target folder for generated markdown files (relative paths are resolved from project root)
+- `output.fileNameFormat`: Output file format (default: `{slug}.md`)
+- `source.output`: Optional per-source override. Set `false` to disable export for that source.
+
+`fileNameFormat` supports:
+
+- Placeholder format: `{slug}`, `{id}`, `{lang}`, `{frontMatter.slug}`, `{source.id}`
+- Direct field references: `$_slug-$_id.md`, `$_frontMatter.lang/$_source.id.md`
+- Mapping expression format: `"$concat($_lang, '/', $_slug, '.md')"`
+
+If no extension is provided, `.md` is appended automatically.
+
 Field references:
 
 - `$_field` reads from source
@@ -154,6 +178,17 @@ Functions:
 - `$upper(value)` -> uppercase string
 - `$trim(value)` -> trims whitespace
 - `$join(array, separator)` -> joins array into a string
+- `$if(condition, then, else)` -> conditional value
+- `$eq(a, b)` -> equality check
+- `$neq(a, b)` -> inequality check
+- `$gt(a, b)` -> greater-than check
+- `$gte(a, b)` -> greater-than-or-equal check
+- `$lt(a, b)` -> less-than check
+- `$lte(a, b)` -> less-than-or-equal check
+- `$and(v1, v2, ...)` -> logical AND
+- `$or(v1, v2, ...)` -> logical OR
+- `$not(value)` -> logical NOT
+- `$coalesce(v1, v2, v3...)` -> first non-empty value (`null`, `undefined`, `""` are skipped)
 - `$date(value, format)` -> formats a date; no `format` returns ISO
 - `$now()` -> current datetime in ISO
 - `$today()` -> current datetime in ISO (same as `$now`)
@@ -161,8 +196,12 @@ Functions:
 - `$boolean(value)` -> normalizes truthy values
 - `$default(value, fallback)` -> fallback if value is empty
 - `$replace(value, from, to)` -> string replace (all occurrences)
+- `$htmlToMD(value)` -> converts basic HTML into Markdown
+- `$truncate(value, len)` -> limits string length to `len`
+- `$contains(valueOrArray, needle)` -> checks string/array membership
 - `$merge(array1, array2, ...)` -> merges arrays
 - `$unique(array)` -> removes duplicates
+- `$compact(array)` -> removes empty items (`null`, `undefined`, empty string/array/object)
 - `$nanoid(length)` -> random id
 - `$uuid()` -> random UUID (v4)
 

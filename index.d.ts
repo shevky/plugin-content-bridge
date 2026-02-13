@@ -3,6 +3,7 @@ import type { PluginDefinition, PluginHooks } from "@shevky/base";
 export type ContentBridgeConfig = {
   sources: ContentBridgeSource[];
   maxItems?: number;
+  output?: ContentBridgeOutput | false;
 };
 
 export type ContentBridgeMapping = {
@@ -25,6 +26,12 @@ export type ContentBridgeSource = {
   fetch: ContentBridgeFetchConfig;
   mapping: ContentBridgeMapping;
   maxItems?: number;
+  output?: ContentBridgeOutput | false;
+};
+
+export type ContentBridgeOutput = {
+  directory?: string;
+  fileNameFormat?: string;
 };
 
 export type ContentBridgePagination = {

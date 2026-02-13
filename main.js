@@ -3,11 +3,12 @@ import { plugin } from "@shevky/base";
 import { loadContentFromApi } from "./lib/loader.js";
 
 const PLUGIN_NAME = "shevky-content-bridge";
-const PLUGIN_VERSION = "0.0.1";
+const PLUGIN_VERSION = "0.0.2";
 
 /** @typedef {import("./index.d.ts").ContentBridgeConfig} ContentBridgeConfig */
 /** @typedef {import("./index.d.ts").ContentBridgeMapping} ContentBridgeMapping */
 /** @typedef {import("./index.d.ts").ContentBridgeSource} ContentBridgeSource */
+/** @typedef {import("./index.d.ts").ContentBridgeOutput} ContentBridgeOutput */
 
 /** @type {import("@shevky/base").PluginHooks} */
 const hooks = {
@@ -54,6 +55,7 @@ const hooks = {
         : Number.isFinite(config.maxItems)
           ? config.maxItems
           : undefined;
+      const markdownOutput = source.output ?? config.output;
 
       await loadContentFromApi({
         ctx,
@@ -68,6 +70,8 @@ const hooks = {
         sourcePathMapping: source.mapping?.sourcePath,
         pluginName: PLUGIN_NAME,
         maxItems,
+        markdownOutput,
+        projectRoot: ctx.paths?.root,
       });
     }
 
