@@ -67,7 +67,7 @@ Add plugin config in `site.json` (recommended: `sources`):
               "layout": "default",
               "status": "published",
               "featured": true,
-              "tags": "$_tags",
+              "tags": "$compact($unique($merge($extract($_categories, 'name'), $split($_keywords, ','))))",
               "date": "$now()",
               "description": "$_title",
               "category": "$_tags[0]"
@@ -145,6 +145,24 @@ Continuation priority:
 - `content`: Content body (markdown)
 - `sourcePath`: Source path (required)
 
+`frontMatter` values can be string expressions, literals, objects, or arrays. Example:
+
+```yaml
+tags:
+  - "$if($eq($_status, 1), 'active', 'archived')"
+  - "$_location.city"
+
+jobTags:
+  - label: "$_typeStr"
+  - label: "$if($_isExperienceRequired, 'Deneyim Gerekli', '')"
+  - label: "$if($lte($_dateCreateISO8601, $sub($today(), 15)), 'featured', '')"
+    type: "time"
+
+files: "$iter($_files, $obj($_path, $_thumbnailPath))"
+
+customTags: "$arr('remote', $_location.city, $if($_isExperienceRequired, 'experience-required', ''))"
+```
+
 ### Limits
 
 - `maxItems`: Optional. Global limit for the plugin. Each source can override it with its own `maxItems`.
@@ -172,12 +190,31 @@ Field references:
 
 Functions:
 
+Structure and Collections:
+
+- `$arr(v1, v2, ...)` -> creates an array from values
+- `$obj(...)` -> creates an object
+- `$iter(array, template)` -> loops over array items and evaluates template for each item
+- `$split(value, separator)` -> splits string/array items into an array (trimmed, empty items removed)
+- `$extract(array, path1, path2...)` -> extracts one or more fields from object arrays
+- `$merge(array1, array2, ...)` -> merges arrays
+- `$unique(array)` -> removes duplicates
+- `$compact(array)` -> removes empty items (`null`, `undefined`, empty string/array/object)
+
+String and Content:
+
 - `$slugify(value)` -> URL-safe slug
 - `$concat(a, b, c...)` -> joins values into one string
 - `$lower(value)` -> lowercase string
 - `$upper(value)` -> uppercase string
 - `$trim(value)` -> trims whitespace
 - `$join(array, separator)` -> joins array into a string
+- `$replace(value, from, to)` -> string replace (all occurrences)
+- `$htmlToMD(value)` -> converts basic HTML into Markdown
+- `$truncate(value, len)` -> limits string length to `len`
+
+Logic and Comparison:
+
 - `$if(condition, then, else)` -> conditional value
 - `$eq(a, b)` -> equality check
 - `$neq(a, b)` -> inequality check
@@ -188,22 +225,35 @@ Functions:
 - `$and(v1, v2, ...)` -> logical AND
 - `$or(v1, v2, ...)` -> logical OR
 - `$not(value)` -> logical NOT
-- `$coalesce(v1, v2, v3...)` -> first non-empty value (`null`, `undefined`, `""` are skipped)
+- `$contains(valueOrArray, needle)` -> checks string/array membership
+
+Date and Math:
+
 - `$date(value, format)` -> formats a date; no `format` returns ISO
+- `$add(base, amount, unit?)` -> adds to number/date. For dates, default unit is `day` and returns ISO.
+- `$sub(base, amount, unit?)` -> subtracts from number/date. For dates, default unit is `day` and returns ISO.
 - `$now()` -> current datetime in ISO
 - `$today()` -> current datetime in ISO (same as `$now`)
+
+Type and Fallback:
+
 - `$number(value)` -> parses to number (invalid -> `undefined`)
 - `$boolean(value)` -> normalizes truthy values
 - `$default(value, fallback)` -> fallback if value is empty
-- `$replace(value, from, to)` -> string replace (all occurrences)
-- `$htmlToMD(value)` -> converts basic HTML into Markdown
-- `$truncate(value, len)` -> limits string length to `len`
-- `$contains(valueOrArray, needle)` -> checks string/array membership
-- `$merge(array1, array2, ...)` -> merges arrays
-- `$unique(array)` -> removes duplicates
-- `$compact(array)` -> removes empty items (`null`, `undefined`, empty string/array/object)
+- `$coalesce(v1, v2, v3...)` -> first non-empty value (`null`, `undefined`, `""` are skipped)
+
+IDs:
+
 - `$nanoid(length)` -> random id
 - `$uuid()` -> random UUID (v4)
+
+Notes:
+
+- All functions must be called with parentheses. Example: `$today()`, not `$today`.
+- `$obj($_path, $_thumbnailPath)` infers keys from field names and returns `{ path, thumbnailPath }`.
+- `$obj('url', $_path, 'thumb', $_thumbnailPath)` uses explicit key-value pairs.
+- `$extract($_categories, 'name')` returns `['Category A', 'Category B']`.
+- `$extract($_files, 'path', 'thumbnailPath')` returns `[{ path, thumbnailPath }, ...]`.
 
 `$date` format tokens: `YYYY`, `MM`, `DD`, `HH`, `mm`, `ss`.
 

@@ -3,7 +3,7 @@ import { plugin } from "@shevky/base";
 import { loadContentFromApi } from "./lib/loader.js";
 
 const PLUGIN_NAME = "shevky-content-bridge";
-const PLUGIN_VERSION = "0.0.2";
+const PLUGIN_VERSION = "0.0.3";
 
 /** @typedef {import("./index.d.ts").ContentBridgeConfig} ContentBridgeConfig */
 /** @typedef {import("./index.d.ts").ContentBridgeMapping} ContentBridgeMapping */

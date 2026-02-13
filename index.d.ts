@@ -7,7 +7,7 @@ export type ContentBridgeConfig = {
 };
 
 export type ContentBridgeMapping = {
-  frontMatter?: Record<string, string>;
+  frontMatter?: Record<string, any>;
   content?: string;
   sourcePath?: string;
 };
