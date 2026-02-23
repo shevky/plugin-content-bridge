@@ -3,7 +3,7 @@ import { plugin } from "@shevky/base";
 import { loadContentFromApi } from "./lib/loader.js";
 
 const PLUGIN_NAME = "shevky-content-bridge";
-const PLUGIN_VERSION = "0.0.4";
+const PLUGIN_VERSION = "0.0.5";
 
 /** @typedef {import("./index.d.ts").ContentBridgeConfig} ContentBridgeConfig */
 /** @typedef {import("./index.d.ts").ContentBridgeMapping} ContentBridgeMapping */
@@ -56,23 +56,35 @@ const hooks = {
           ? config.maxItems
           : undefined;
       const markdownOutput = source.output ?? config.output;
+      const sourceName =
+        typeof source.name === "string" && source.name.trim().length > 0
+          ? source.name.trim()
+          : API_URL;
 
-      await loadContentFromApi({
-        ctx,
-        url: API_URL,
-        method,
-        headers,
-        body,
-        pagination: fetchConfig.pagination,
-        timeoutMs,
-        frontMatterMapping: source.mapping?.frontMatter ?? {},
-        contentMapping: source.mapping?.content,
-        sourcePathMapping: source.mapping?.sourcePath,
-        pluginName: PLUGIN_NAME,
-        maxItems,
-        markdownOutput,
-        projectRoot: ctx.paths?.root,
-      });
+      try {
+        await loadContentFromApi({
+          ctx,
+          url: API_URL,
+          method,
+          headers,
+          body,
+          pagination: fetchConfig.pagination,
+          timeoutMs,
+          frontMatterMapping: source.mapping?.frontMatter ?? {},
+          contentMapping: source.mapping?.content,
+          sourcePathMapping: source.mapping?.sourcePath,
+          pluginName: PLUGIN_NAME,
+          maxItems,
+          markdownOutput,
+          projectRoot: ctx.paths?.root,
+        });
+      } catch (error) {
+        ctx.log.warn(
+          `[${PLUGIN_NAME}] Source '${sourceName}' skipped due to HTTP 503. Error: ${error}`,
+        );
+
+        continue;
+      }
     }
 
     ctx.log.info(`[${PLUGIN_NAME}] Content load finished.`);
